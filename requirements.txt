@@ -1,0 +1,15 @@
+# existing...
+openai>=0.27.0
+playwright>=1.30.0
+langchain>=0.0.300
+python-dotenv>=1.0.0
+beautifulsoup4>=4.12.0
+pandas>=1.5.3
+pdfplumber>=0.10.0
+
+# add for NLP (resume parsing)
+spacy>=3.5.0
+pdfplumber>=0.10.0
+
+# if you want optional email templating
+jinja2>=3.1.2
