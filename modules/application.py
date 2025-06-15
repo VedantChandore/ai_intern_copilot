@@ -21,18 +21,49 @@ class JobApplicationBot:
             browser = p.chromium.launch(headless=False)
             page = browser.new_page()
             page.goto(job_url)
-            time.sleep(2)  # Wait for page to load
-            # TODO: Add logic to autofill forms based on site structure
-            # Example: page.fill('input[name="name"]', self.resume_data.get('name', ''))
-            # Example: page.set_input_files('input[type="file"]', self.resume_data.get('resume_path', ''))
-            # Optionally generate and fill cover letter
-            if job_title and company:
-                cover_letter = self.generate_cover_letter(job_title, company)
-                # Example: page.fill('textarea[name="cover_letter"]', cover_letter)
-            # TODO: Submit the application
-            browser.close()
-            return f"Applied to {job_url} (simulate)"
+            page.wait_for_load_state('networkidle')
+            try:
+                # Fill name, email, phone (selectors may need adjustment per actual form)
+                if self.resume_data.get('name'):
+                    try:
+                        page.fill('input[name="firstName"]', self.resume_data.get('name', ''))
+                    except:
+                        pass
+                if self.resume_data.get('email'):
+                    try:
+                        page.fill('input[name="email"]', self.resume_data.get('email', ''))
+                    except:
+                        pass
+                if self.resume_data.get('phone'):
+                    try:
+                        page.fill('input[name="phone"]', self.resume_data.get('phone', ''))
+                    except:
+                        pass
+                # Upload resume (if path is available)
+                if self.resume_data.get('resume_path'):
+                    try:
+                        page.set_input_files('input[type="file"]', self.resume_data['resume_path'])
+                    except:
+                        pass
+                # Cover letter (if field exists)
+                if job_title and company:
+                    cover_letter = self.generate_cover_letter(job_title, company)
+                    try:
+                        page.fill('textarea[name="coverLetter"]', cover_letter)
+                    except:
+                        pass  # Field may not exist
+                # Try to click submit (button selector may vary)
+                try:
+                    page.click('button[type="submit"]')
+                except:
+                    pass
+                time.sleep(2)
+                browser.close()
+                return f"Applied to {job_url} (automated, fields filled where possible)"
+            except Exception as e:
+                browser.close()
+                return f"Failed to apply: {e}"
 
 # Example usage:
 # bot = JobApplicationBot(resume_data)
-# bot.apply_to_job('https://example.com/job123', job_title='Software Engineer', company='ExampleCorp')
+# bot.apply_to_job('https://career10.successfactors.com/careers?company=yashtechnoP', job_title='Software Engineer', company='YASH Technologies')

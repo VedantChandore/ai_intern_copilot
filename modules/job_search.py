@@ -1,8 +1,7 @@
 # servers/job_search_playwright_mcp.py
-from mcp import MCPHandler, run_mcp_server
 from playwright.sync_api import sync_playwright
 
-class JobSearchPlaywrightHandler(MCPHandler):
+class JobSearchPlaywrightHandler:
     def handle(self, command: str, **kwargs):
         query = kwargs.get("query", "software developer")
         location = kwargs.get("location", "India")
@@ -24,4 +23,5 @@ class JobSearchPlaywrightHandler(MCPHandler):
             return f"Opened job searches for '{query}' in '{location}' on Indeed and LinkedIn."
 
 if __name__ == "__main__":
-    run_mcp_server(JobSearchPlaywrightHandler())
+    handler = JobSearchPlaywrightHandler()
+    print(handler.handle("search", query="software developer", location="India"))
