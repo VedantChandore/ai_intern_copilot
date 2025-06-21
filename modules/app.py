@@ -5,6 +5,8 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from llm_client import MCPClient
+import pandas as pd
+import sqlite3
 
 st.set_page_config(page_title="AI Intern Copilot", layout="wide", page_icon="🤖")
 st.markdown("""
@@ -99,6 +101,43 @@ if apply_clicked:
             bot = JobApplicationBot(resume_data)
             apply_result = bot.apply_to_job(job_url)
         st.success(apply_result)
+
+# --- Section 5: Analytics & Insights ---
+st.header('5️⃣ Analytics & Insights')
+st.markdown('Track your job search and application progress with real-time analytics.')
+
+conn = sqlite3.connect('job_applications.db')
+c = conn.cursor()
+# Ensure the table exists
+c.execute('''CREATE TABLE IF NOT EXISTS applications
+             (date TEXT, job_title TEXT, company TEXT, job_url TEXT, status TEXT)''')
+conn.commit()
+df = pd.read_sql_query('SELECT * FROM applications', conn)
+conn.close()
+
+if not df.empty:
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric('Total Applications', len(df))
+    with col2:
+        st.metric('Unique Job Titles', df["job_title"].nunique())
+    with col3:
+        st.metric('Unique Companies', df["company"].nunique())
+
+    st.subheader('Applications by Job Title')
+    st.bar_chart(df['job_title'].value_counts())
+
+    st.subheader('Applications by Company')
+    st.bar_chart(df['company'].value_counts())
+
+    df['date'] = pd.to_datetime(df['date'])
+    st.subheader('Applications Over Time')
+    st.line_chart(df.groupby('date').size())
+
+    st.subheader('All Applications')
+    st.dataframe(df)
+else:
+    st.info('No application data yet. Start applying to jobs to see analytics!')
 
 st.markdown("---")
 st.markdown("<center>Made with ❤️ by AI Intern Copilot</center>", unsafe_allow_html=True)
